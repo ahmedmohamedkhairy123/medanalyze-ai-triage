@@ -1,2 +1,15 @@
-# medanalyze-ai-triage
-An informational tool that uses AI to provide potential medical insights based on symptoms and images. For educational purposes only
+# MedAnalyze AI Triage
+
+A professional medical symptom analyzer and triage system providing structured diagnostic reports and specialist recommendations.
+
+## Phase 1 Complete
+- ✅ VS Code setup
+- ✅ Git repository initialized
+- ✅ Project structure created
+- ✅ Dependencies installed
+
+## Next Steps
+- Frontend development (Phases 2-7)
+- Backend integration
+- Gemini AI service
+- Deployment
