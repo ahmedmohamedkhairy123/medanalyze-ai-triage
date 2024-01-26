@@ -4,6 +4,7 @@ import { AppStep, SymptomInput, Question, MedicalReport } from './types';
 
 const App: React.FC = () => {
     const [step, setStep] = useState<AppStep>('LANDING');
+    const [loading, setLoading] = useState(false);
     const [symptoms, setSymptoms] = useState<SymptomInput>({ description: '', files: [] });
     const [questions, setQuestions] = useState<Question[]>([]);
     const [report, setReport] = useState<MedicalReport | null>(null);
@@ -27,33 +28,89 @@ const App: React.FC = () => {
                             Get an instant, high-precision medical analysis of your symptoms. Our AI provides specialized triage,
                             risk assessments, and professional recommendations.
                         </p>
-                        <button
-                            onClick={handleStart}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold text-lg transition-all"
-                        >
-                            Analyze Symptoms Now
-                        </button>
+                        <div className="flex flex-col sm:flex-row justify-center gap-4">
+                            <button
+                                onClick={handleStart}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold text-lg transition-all transform hover:scale-105"
+                            >
+                                Analyze Symptoms Now
+                            </button>
+                            <button className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all">
+                                Login / Sign Up (Optional)
+                            </button>
+                        </div>
                     </div>
                 )}
-
                 {step === 'SYMPTOMS' && (
                     <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-                        <h2 className="text-2xl font-bold mb-4">Step 1: Describe Your Symptoms</h2>
+                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <i className="fas fa-stethoscope text-indigo-600"></i>
+                            Step 1: Tell us about your symptoms
+                        </h2>
                         <textarea
-                            className="w-full h-40 p-4 border border-gray-300 rounded-lg mb-4"
-                            placeholder="Describe your symptoms..."
+                            className="w-full h-40 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all mb-6"
+                            placeholder="e.g., I've been feeling sharp pain in my upper abdomen for 3 days, accompanied by nausea and a slight fever..."
                             value={symptoms.description}
                             onChange={(e) => setSymptoms({ ...symptoms, description: e.target.value })}
                         />
+
+                        <div className="mb-8">
+                            <label className="block font-semibold mb-2">Upload Medical Files (Reports, Scans, Photos)</label>
+                            <div className="flex items-center justify-center w-full">
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <i className="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                        <p className="text-sm text-gray-500">Click to upload PDFs or Images</p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        accept="image/*,application/pdf"
+                                        onChange={(e) => {
+                                            const files = e.target.files;
+                                            if (!files) return;
+                                            console.log('Files selected:', files.length);
+                                            // File handling will be implemented in Phase 7
+                                        }}
+                                    />
+                                </label>
+                            </div>
+                            {symptoms.files.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    {symptoms.files.map((f, i) => (
+                                        <span key={i} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
+                                            {f.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
                         <button
-                            className="bg-indigo-600 text-white px-6 py-2 rounded-lg"
-                            onClick={() => setStep('QUESTIONNAIRE')}
+                            disabled={!symptoms.description || loading}
+                            onClick={() => {
+                                setLoading(true);
+                                // Simulate API call
+                                setTimeout(() => {
+                                    setLoading(false);
+                                    setStep('QUESTIONNAIRE');
+                                }, 1000);
+                            }}
+                            className={`w-full py-4 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-3 ${!symptoms.description || loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+                                }`}
                         >
-                            Continue to Questions
+                            {loading ? (
+                                <>
+                                    <i className="fas fa-circle-notch fa-spin"></i>
+                                    Analyzing symptoms...
+                                </>
+                            ) : (
+                                'Analyze initial symptoms'
+                            )}
                         </button>
                     </div>
                 )}
-
                 {step === 'QUESTIONNAIRE' && (
                     <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
                         <h2 className="text-2xl font-bold mb-4">Step 2: Questionnaire</h2>
@@ -75,7 +132,7 @@ const App: React.FC = () => {
                 )}
 
                 <div className="mt-8 text-center text-green-600 font-medium">
-                    ✅ Phase 4: Components Complete! (TopBar & Disclaimer)
+                    ✅ Phase 5: Complete Symptoms input page with file upload UI, loading states, and exact styling
                 </div>
             </main>
 
