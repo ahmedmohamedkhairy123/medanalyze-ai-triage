@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TopBar, Disclaimer } from './components';
+import { generateQuestions } from './services';
 import { AppStep, SymptomInput, Question, MedicalReport } from './types';
-
 const App: React.FC = () => {
     const [step, setStep] = useState<AppStep>('LANDING');
     const [loading, setLoading] = useState(false);
