@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TopBar, Disclaimer } from './components';
-import { generateQuestions } from './services';
+import { generateQuestions, generateFinalReport } from './services';
 import { AppStep, SymptomInput, Question, MedicalReport } from './types';
 const App: React.FC = () => {
     const [step, setStep] = useState<AppStep>('LANDING');
@@ -70,8 +70,21 @@ const App: React.FC = () => {
                                         onChange={(e) => {
                                             const files = e.target.files;
                                             if (!files) return;
-                                            console.log('Files selected:', files.length);
-                                            // File handling will be implemented in Phase 7
+
+                                            Array.from(files).forEach((file: File) => {
+                                                const reader = new FileReader();
+                                                reader.onload = (ev) => {
+                                                    setSymptoms(prev => ({
+                                                        ...prev,
+                                                        files: [...prev.files, {
+                                                            name: file.name,
+                                                            type: file.type,
+                                                            data: ev.target?.result as string
+                                                        }]
+                                                    }));
+                                                };
+                                                reader.readAsDataURL(file);
+                                            });
                                         }}
                                     />
                                 </label>
@@ -89,13 +102,27 @@ const App: React.FC = () => {
 
                         <button
                             disabled={!symptoms.description || loading}
-                            onClick={() => {
+                            onClick={async () => {
+                                if (!symptoms.description) return;
                                 setLoading(true);
-                                // Simulate API call
-                                setTimeout(() => {
-                                    setLoading(false);
+                                try {
+                                    // Call AI to generate questions
+                                    const qTexts = await generateQuestions(symptoms.description, symptoms.files);
+
+                                    // Create question objects with empty answers
+                                    const generatedQuestions: Question[] = qTexts.map((text, i) => ({
+                                        id: i,
+                                        text,
+                                        answer: ''
+                                    }));
+
+                                    setQuestions(generatedQuestions);
                                     setStep('QUESTIONNAIRE');
-                                }, 1000);
+                                } catch (error: any) {
+                                    alert(error.message || "Failed to analyze symptoms. Please try again.");
+                                } finally {
+                                    setLoading(false);
+                                }
                             }}
                             className={`w-full py-4 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-3 ${!symptoms.description || loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
                                 }`}
@@ -113,13 +140,63 @@ const App: React.FC = () => {
                 )}
                 {step === 'QUESTIONNAIRE' && (
                     <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-                        <h2 className="text-2xl font-bold mb-4">Step 2: Questionnaire</h2>
-                        <p className="text-gray-600 mb-6">Questions will appear here.</p>
+                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <i className="fas fa-clipboard-question text-indigo-600"></i>
+                            Step 2: Follow-up Questions
+                        </h2>
+                        <p className="text-gray-600 mb-8">Please answer these 10 questions accurately to refine our analysis.</p>
+
+                        <div className="space-y-8">
+                            {questions.map((q, idx) => (
+                                <div key={q.id} className="border-b border-gray-100 pb-6 last:border-0">
+                                    <label className="block text-lg font-medium text-gray-800 mb-3">
+                                        {idx + 1}. {q.text}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        placeholder="Provide your answer here..."
+                                        value={q.answer}
+                                        onChange={(e) => {
+                                            const newQs = [...questions];
+                                            newQs[idx].answer = e.target.value;
+                                            setQuestions(newQs);
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
                         <button
-                            className="bg-green-600 text-white px-6 py-2 rounded-lg"
-                            onClick={() => setStep('REPORT')}
+                            disabled={loading || questions.some(q => !q.answer)}
+                            onClick={async () => {
+                                setLoading(true);
+                                try {
+                                    // Prepare QA list for AI
+                                    const qaList = questions.map(q => ({ q: q.text, a: q.answer }));
+
+                                    // Call AI to generate final report
+                                    const result = await generateFinalReport(symptoms.description, symptoms.files, qaList);
+
+                                    setReport(result);
+                                    setStep('REPORT');
+                                } catch (error: any) {
+                                    alert(error.message || "Failed to generate report. Please try again.");
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            className={`w-full py-4 mt-8 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-3 ${loading || questions.some(q => !q.answer) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                                }`}
                         >
-                            Generate Report
+                            {loading ? (
+                                <>
+                                    <i className="fas fa-circle-notch fa-spin"></i>
+                                    Finalizing Medical Analysis...
+                                </>
+                            ) : (
+                                'Generate Final Analysis Report'
+                            )}
                         </button>
                     </div>
                 )}
