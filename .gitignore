@@ -166,3 +166,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 .env.*.local
+# Server
+server/node_modules/
+server/dist/
+
+# MongoDB
+data/
+*.db
