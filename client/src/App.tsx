@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { TopBar, Disclaimer } from './components';
+import { TopBar, Disclaimer, LoginModal } from './components';
 import { generateQuestions, generateFinalReport } from './services';
 import { AppStep, SymptomInput, Question, MedicalReport } from './types';
+
 
 const App: React.FC = () => {
     const [step, setStep] = useState<AppStep>('LANDING');
     const [loading, setLoading] = useState(false);
     const [symptoms, setSymptoms] = useState<SymptomInput>({ description: '', files: [] });
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [showLogin, setShowLogin] = useState(false);
     const [report, setReport] = useState<MedicalReport | null>(null);
 
     const handleStart = () => setStep('SYMPTOMS');
@@ -88,7 +90,10 @@ const App: React.FC = () => {
                             >
                                 Analyze Symptoms Now
                             </button>
-                            <button className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all">
+                            <button
+                                onClick={() => setShowLogin(true)}
+                                className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all hover:scale-105"
+                            >
                                 Login / Sign Up (Optional)
                             </button>
                         </div>
@@ -217,8 +222,8 @@ const App: React.FC = () => {
 
                         {/* Triage Header */}
                         <div className={`rounded-xl p-8 shadow-lg text-white border-l-8 ${report.triage.urgency === 'RED' ? 'bg-red-600 border-red-900' :
-                                report.triage.urgency === 'YELLOW' ? 'bg-yellow-500 border-yellow-700' :
-                                    'bg-green-600 border-green-800'
+                            report.triage.urgency === 'YELLOW' ? 'bg-yellow-500 border-yellow-700' :
+                                'bg-green-600 border-green-800'
                             }`}>
                             <div className="flex items-center gap-4 mb-4">
                                 <span className="text-5xl">
@@ -354,7 +359,7 @@ const App: React.FC = () => {
                     </div>
                 )}
             </main>
-
+            <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
             <footer className="bg-gray-100 border-t border-gray-200 py-8 text-center text-gray-500 text-sm">
                 <p>© 2024 MedAnalyze AI. All interactions are secure and encrypted.</p>
             </footer>
