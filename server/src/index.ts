@@ -3,8 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import connectDB from './config/database';  // Add this
-import authRoutes from './routes/auth';     // Add this
+import connectDB from './config/database';
+import authRoutes from './routes/auth';
+import analysesRoutes from './routes/analyses'; // Changed to analyses
 
 dotenv.config();
 
@@ -30,7 +31,8 @@ connectDB().then(() => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes);  // Add this line
+app.use('/api/auth', authRoutes);
+app.use('/api/analyses', analysesRoutes); // Changed to analyses
 
 // Basic route
 app.get('/api/health', (req, res) => {
