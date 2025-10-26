@@ -53,6 +53,32 @@ const App: React.FC = () => {
         try {
             const qaList = questions.map(q => ({ q: q.text, a: q.answer }));
             const result = await generateFinalReport(symptoms.description, symptoms.files, qaList);
+
+            // Save to database if user is logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    await fetch('http://localhost:5000/api/analyses', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            symptoms: symptoms.description,
+                            files: symptoms.files,
+                            questions: qaList,
+                            report: result
+                        })
+                    });
+                    console.log('✅ Analysis saved to MongoDB database!');
+                } catch (error) {
+                    console.error('⚠️ Failed to save analysis (but report still shown):', error);
+                }
+            } else {
+                console.log('ℹ️ User not logged in - analysis not saved to database');
+            }
+
             setReport(result);
             setStep('REPORT');
         } catch (error: any) {
@@ -61,7 +87,6 @@ const App: React.FC = () => {
             setLoading(false);
         }
     };
-
     // Sort and split diagnoses safely
     const primaryDiagnosis = report?.diagnoses.reduce((prev, current) => (prev.confidence > current.confidence) ? prev : current);
     const otherDiagnoses = report?.diagnoses.filter(d => d !== primaryDiagnosis).slice(0, 2);
