@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import localStorageService from '../services/localStorageService';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -19,28 +20,27 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-
-        try {
-            const response = await fetch(`http://localhost:5000${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                alert(`Successfully ${isLogin ? 'logged in' : 'registered'}!`);
+        // Frontend-only authentication
+        if (isLogin) {
+            // Mock login
+            const success = localStorageService.mockLogin(formData.email, formData.password);
+            if (success) {
+                alert('✅ Logged in successfully');
+                onClose();
+                window.location.reload(); // Refresh to update UI
+            } else {
+                alert('Login failed');
+            }
+        } else {
+            // Mock registration
+            const success = localStorageService.mockRegister(formData.name, formData.email, formData.password);
+            if (success) {
+                alert('✅ Account created successfully (Frontend Mode)');
                 onClose();
                 window.location.reload();
             } else {
-                alert(data.error || 'Something went wrong');
+                alert('Registration failed');
             }
-        } catch (error) {
-            alert('Connection error. Make sure backend is running on port 5000.');
         }
     };
 

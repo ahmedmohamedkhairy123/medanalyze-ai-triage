@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TopBar, Disclaimer, LoginModal } from './components';
 import { generateQuestions, generateFinalReport } from './services';
 import { AppStep, SymptomInput, Question, MedicalReport } from './types';
+import localStorageService from './services/localStorageService';
 
 
 const App: React.FC = () => {
@@ -54,29 +55,13 @@ const App: React.FC = () => {
             const qaList = questions.map(q => ({ q: q.text, a: q.answer }));
             const result = await generateFinalReport(symptoms.description, symptoms.files, qaList);
 
-            // Save to database if user is logged in
-            const token = localStorage.getItem('token');
-            if (token) {
-                try {
-                    await fetch('http://localhost:5000/api/analyses', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            symptoms: symptoms.description,
-                            files: symptoms.files,
-                            questions: qaList,
-                            report: result
-                        })
-                    });
-                    console.log('✅ Analysis saved to MongoDB database!');
-                } catch (error) {
-                    console.error('⚠️ Failed to save analysis (but report still shown):', error);
-                }
-            } else {
-                console.log('ℹ️ User not logged in - analysis not saved to database');
+            // ✅ SAVE TO LOCALSTORAGE (No backend needed!)
+            try {
+                // Import the service at top: import localStorageService from './services/localStorageService';
+                localStorageService.saveAnalysis(symptoms.description, result);
+                console.log('✅ Analysis saved to browser storage');
+            } catch (saveError) {
+                console.log('⚠️ Could not save to local storage (but report still shown)');
             }
 
             setReport(result);
@@ -119,7 +104,8 @@ const App: React.FC = () => {
                                 onClick={() => setShowLogin(true)}
                                 className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all hover:scale-105"
                             >
-                                Login / Sign Up (Optional)
+                                <i className="fas fa-user-circle mr-2"></i>
+                                Login / Sign Up
                             </button>
                         </div>
                     </div>
