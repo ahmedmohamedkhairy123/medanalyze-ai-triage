@@ -7,6 +7,10 @@
 **This application is developed by Ahmed and is powered by AI and is intended for educational and triage support only. It is NOT a replacement for professional medical advice, diagnosis, or treatment. In the event of a medical emergency, please contact your local emergency services (e.g., 911) immediately or consult your doctor**
 
 # MedAnalyze AI Triage
+## 🚀 Live Demo (please wait 5 seconds to see the GIF)
+![Demo Animation](demo.gif)
+
+[![Vercel](https://img.shields.io/badge/Vercel-Live%20App-black?style=for-the-badge&logo=vercel)](https://medanalyze-ai-triage.vercel.app/)
 
 A professional medical symptom analyzer and triage system providing structured diagnostic reports and specialist recommendations.
 ## 🛠️ Tech Stack
